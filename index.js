@@ -1,53 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>BFHL Input Form</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
-    textarea { width: 300px; height: 100px; }
-    button { padding: 8px 14px; margin-top: 10px; }
-    pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
-  </style>
-</head>
-<body>
-  <h2>BFHL Input Form</h2>
-  
-  <form id="dataForm">
-    <label for="data">Enter values (comma separated):</label><br><br>
-    <textarea id="data" required></textarea><br><br>
-    <button type="submit">Submit</button>
-  </form>
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 
-  <h3>Response:</h3>
-  <pre id="response"></pre>
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  <script>
-    const form = document.getElementById("dataForm");
-    const responseBox = document.getElementById("response");
+const app = express();
+app.use(express.json());
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+// serve index.html at root
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
-      // Convert comma separated values into an array
-      const values = document.getElementById("data").value
-        .split(",")
-        .map(v => v.trim())
-        .filter(v => v !== "");
+// Change with your own details
+const FULL_NAME = "john_doe";
+const DOB = "17091999";
+const EMAIL = "john@xyz.com";
+const ROLL_NUMBER = "ABCD123";
 
-      try {
-        const res = await fetch("/bfhl", {   // notice: relative URL since same server
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: values }),
-        });
+// Helper: alternating caps
+function alternatingCaps(str) {
+  let result = "";
+  let toggle = true;
+  for (let ch of str) {
+    result += toggle ? ch.toUpperCase() : ch.toLowerCase();
+    toggle = !toggle;
+  }
+  return result;
+}
 
-        const result = await res.json();
-        responseBox.textContent = JSON.stringify(result, null, 2);
-      } catch (err) {
-        responseBox.textContent = "Error: " + err.message;
+// POST route
+app.post("/bfhl", (req, res) => {
+  try {
+    const data = req.body.data || [];
+
+    let odd_numbers = [];
+    let even_numbers = [];
+    let alphabets = [];
+    let special_characters = [];
+    let sum = 0;
+
+    for (let item of data) {
+      if (/^-?\d+$/.test(item)) {
+        let num = parseInt(item);
+        sum += num;
+        if (num % 2 === 0) even_numbers.push(item.toString());
+        else odd_numbers.push(item.toString());
+      } else if (/^[a-zA-Z]+$/.test(item)) {
+        alphabets.push(item.toUpperCase());
+      } else {
+        special_characters.push(item);
       }
+    }
+
+    const concat_string = alternatingCaps(alphabets.join("").split("").reverse().join(""));
+
+    res.status(200).json({
+      is_success: true,
+      user_id: `${FULL_NAME}_${DOB}`,
+      email: EMAIL,
+      roll_number: ROLL_NUMBER,
+      odd_numbers,
+      even_numbers,
+      alphabets,
+      special_characters,
+      sum: sum.toString(),
+      concat_string,
     });
-  </script>
-</body>
-</html>
+  } catch (err) {
+    res.status(500).json({ is_success: false, error: err.message });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
