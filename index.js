@@ -9,15 +9,15 @@ const app = express();
 app.use(express.json());
 
 // serve index.html at root
-app.get("/", (req, res) => {
+app.get("/bfhl", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
 // Change with your own details
-const FULL_NAME = "john_doe";
-const DOB = "17091999";
-const EMAIL = "john@xyz.com";
-const ROLL_NUMBER = "ABCD123";
+const FULL_NAME = "yuvraj_pradhan";
+const DOB = "09052004";
+const EMAIL = "yuvraj.pradhan2022@vitstudent.ac.in";
+const ROLL_NUMBER = "22BCE0474";
 
 // Helper: alternating caps
 function alternatingCaps(str) {
