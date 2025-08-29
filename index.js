@@ -1,7 +1,17 @@
 import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
+
+// serve index.html at root
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 // Change with your own details
 const FULL_NAME = "john_doe";
@@ -9,7 +19,7 @@ const DOB = "17091999";
 const EMAIL = "john@xyz.com";
 const ROLL_NUMBER = "ABCD123";
 
-// Helper: alternating caps from reversed alphabets
+// Helper: alternating caps
 function alternatingCaps(str) {
   let result = "";
   let toggle = true;
@@ -20,6 +30,7 @@ function alternatingCaps(str) {
   return result;
 }
 
+// POST route
 app.post("/bfhl", (req, res) => {
   try {
     const data = req.body.data || [];
@@ -32,7 +43,6 @@ app.post("/bfhl", (req, res) => {
 
     for (let item of data) {
       if (/^-?\d+$/.test(item)) {
-        // it's a number
         let num = parseInt(item);
         sum += num;
         if (num % 2 === 0) even_numbers.push(item.toString());
@@ -44,7 +54,6 @@ app.post("/bfhl", (req, res) => {
       }
     }
 
-    // concat_string (reverse alphabets joined, alternating caps)
     const concat_string = alternatingCaps(alphabets.join("").split("").reverse().join(""));
 
     res.status(200).json({
